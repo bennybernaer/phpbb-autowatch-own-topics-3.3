@@ -1,0 +1,63 @@
+name: Release Auto-subscribe own topics 1.0.0
+
+on:
+  push:
+    paths:
+      - '.github/workflows/release.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify phpBB 3.3 metadata
+        run: |
+          set -euo pipefail
+          grep -q '"version": "1.0.0"' composer.json
+          grep -q '"php": ">=7.4"' composer.json
+          grep -q '"phpbb/phpbb": ">=3.3.0,<4.0.0@dev"' composer.json
+          ! grep -R -n --exclude-dir=.git --exclude-dir=.github --exclude-dir=downloads '\\phpbb\\db\\migration\\data\\v400' .
+
+      - name: Build install ZIP
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/package
+          mkdir -p /tmp/package/bennybernaer/autowatchowntopics
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='downloads/' \
+            ./ /tmp/package/bennybernaer/autowatchowntopics/
+          cd /tmp/package
+          zip -qr /tmp/bennybernaer_autowatchowntopics_1.0.0.zip bennybernaer
+
+      - name: Store ZIP in downloads
+        run: |
+          set -euo pipefail
+          mkdir -p downloads
+          cp /tmp/bennybernaer_autowatchowntopics_1.0.0.zip downloads/bennybernaer_autowatchowntopics_1.0.0.zip
+          rm -f .github/workflows/release.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add Auto-subscribe own topics 1.0.0 release ZIP"
+          git push
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create 1.0.0 \
+            downloads/bennybernaer_autowatchowntopics_1.0.0.zip \
+            --repo "$GITHUB_REPOSITORY" \
+            --target main \
+            --title "Auto-subscribe own topics 1.0.0" \
+            --notes "phpBB 3.3.x build of Auto-subscribe own topics 1.0.0. Requires PHP 7.4 or newer. Prepared on request from the phpBB 4 version; not tested by the author on a phpBB 3.3 installation."
