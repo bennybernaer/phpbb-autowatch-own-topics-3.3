@@ -2,6 +2,13 @@
 
 All notable changes to this extension are documented here.
 
+## 1.0.1 - 2026-11-01
+
+### Fixed
+- Removes stale phpBB notifications when the related post is deleted.
+- Cleans reply, mention, quote, bookmark, forum-watch and post-approval notifications linked to the deleted post.
+- Also removes topic-level notifications when an entire topic is deleted.
+
 ## 1.0.0 - 2026-10-31
 
 ### Added
