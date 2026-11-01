@@ -1,0 +1,14 @@
+services:
+    bennybernaer.autowatchowntopics.listener:
+        class: bennybernaer\autowatchowntopics\event\listener
+        arguments:
+            - '@dbal.conn'
+            - '@user'
+            - '@request'
+            - '@template'
+            - '@config'
+            - '@auth'
+            - '@notification_manager'
+            - '%core.table_prefix%'
+        tags:
+            - { name: event.listener }
